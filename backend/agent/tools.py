@@ -44,7 +44,7 @@ class CareAIAgent(Agent):
 
     async def on_enter(self) -> None:
         await self.session.say(
-            "Hello! Thank you for calling CareAI Health. I'm Mike, your AI health assistant. "
+            "Hello! Thank you for calling CareAI Health. I'm Miko, your AI health assistant. "
             "Could you please share your phone number so I can pull up your details?",
             allow_interruptions=True,
         )

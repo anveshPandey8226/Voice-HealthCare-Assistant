@@ -21,7 +21,10 @@ export function useLiveKitRoom() {
     });
 
     await room.connect(livekit_url, token);
-    await room.startAudio();                                // unlock remote audio playback
+    // startAudio() removed — it uses Web Audio API AudioContext which gets silently
+    // suspended when called after async I/O (fetch + WebSocket break gesture scope).
+    // TavusAvatar now explicitly attaches audio tracks to a native <audio> element,
+    // which uses the browser's media pipeline and works after any user interaction.
     await room.localParticipant.setMicrophoneEnabled(true);
     setRoomName(room_name);
     return room;

@@ -2,7 +2,7 @@ import httpx
 import os
 import json
 
-TAVUS_API_KEY = "443f64c844d6499bb3b8b3eaa6401313"
+TAVUS_API_KEY = os.getenv("TAVUS_API_KEY")
 
 def main():
     if not TAVUS_API_KEY:

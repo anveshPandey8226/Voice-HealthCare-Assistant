@@ -13,6 +13,7 @@ interface Props {
 
 export function TavusAvatar({ active, agentState, room }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const [hasVideo, setHasVideo] = useState(false);
 
   useEffect(() => {
@@ -21,35 +22,39 @@ export function TavusAvatar({ active, agentState, room }: Props) {
     const onSubscribed = (
       track: RemoteTrack,
       _pub: RemoteTrackPublication,
-      _participant: RemoteParticipant,
+      participant: RemoteParticipant,
     ) => {
+      console.log("[TavusAvatar] track subscribed:", track.kind, "from:", participant.identity);
       if (track.kind === Track.Kind.Video && videoRef.current) {
         track.attach(videoRef.current);
         setHasVideo(true);
       }
-    };
-
-    const onUnsubscribed = (track: RemoteTrack) => {
-      if (track.kind === Track.Kind.Video) {
-        track.detach();
-        setHasVideo(false);
+      if (track.kind === Track.Kind.Audio && audioRef.current) {
+        console.log("[TavusAvatar] attaching audio track from:", participant.identity);
+        track.attach(audioRef.current);
       }
     };
 
-    // Check already-published tracks — videoRef.current is valid here because
-    // the <video> element is always mounted (not conditionally removed from the DOM).
+    const onUnsubscribed = (track: RemoteTrack) => {
+      if (track.kind === Track.Kind.Video) { track.detach(); setHasVideo(false); }
+      if (track.kind === Track.Kind.Audio) { track.detach(); }
+    };
+
+    // Check already-subscribed tracks (Tavus may have joined before this effect runs)
     for (const participant of Array.from(room.remoteParticipants.values()) as RemoteParticipant[]) {
       for (const pub of Array.from(participant.trackPublications.values()) as RemoteTrackPublication[]) {
         if (pub.track?.kind === Track.Kind.Video && videoRef.current) {
           pub.track.attach(videoRef.current);
           setHasVideo(true);
         }
+        if (pub.track?.kind === Track.Kind.Audio && audioRef.current) {
+          pub.track.attach(audioRef.current);
+        }
       }
     }
 
     room.on(RoomEvent.TrackSubscribed, onSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, onUnsubscribed);
-
     return () => {
       room.off(RoomEvent.TrackSubscribed, onSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, onUnsubscribed);
@@ -69,6 +74,12 @@ export function TavusAvatar({ active, agentState, room }: Props) {
         muted
         className="absolute inset-0 w-full h-full object-cover"
       />
+      {/*
+        Hidden audio element. Bypasses LiveKit's AudioManager (Web Audio API / AudioContext)
+        which gets suspended when startAudio() is called outside user-gesture scope.
+        Native <audio> srcObject playback works after any user page interaction.
+      */}
+      <audio ref={audioRef} autoPlay playsInline />
       {/* FallbackAvatar overlaid on top with z-10; removed once Tavus video arrives */}
       {(!active || !hasVideo) && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-900">

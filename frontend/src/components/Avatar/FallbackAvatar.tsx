@@ -32,7 +32,7 @@ export function FallbackAvatar({ state }: Props) {
       </div>
 
       <div className="flex flex-col items-center gap-1">
-        <p className="text-white font-semibold text-lg">Mike</p>
+        <p className="text-white font-semibold text-lg">Miko</p>
         <p className="text-white/60 text-sm">CareAI Health Assistant</p>
         <div className={clsx("mt-2 px-3 py-1 rounded-full text-xs font-medium", {
           "bg-gray-700 text-gray-300": state === "idle" || state === "connecting",

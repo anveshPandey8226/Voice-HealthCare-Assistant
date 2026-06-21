@@ -64,7 +64,7 @@ async def entrypoint(ctx: JobContext) -> None:
                     getattr(p, "text", str(p)) for p in content if p
                 )
                 if text:
-                    agent.add_transcript("Mike", text)
+                    agent.add_transcript("Miko", text)
                     agent._text_buffer.append(text)
 
         @session.on("agent_state_changed")
