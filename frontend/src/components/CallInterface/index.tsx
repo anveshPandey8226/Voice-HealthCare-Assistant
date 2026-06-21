@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Room, RoomEvent } from "livekit-client";
+import type { Participant, TranscriptionSegment } from "livekit-client";
 import { useLiveKitRoom } from "@/hooks/useLiveKitRoom";
 import { useToolEvents } from "@/hooks/useToolEvents";
 import { useAgentState } from "@/hooks/useAgentState";
@@ -19,7 +20,10 @@ export function CallInterface() {
   const [loading, setLoading] = useState(false);
   const [muted, setMuted] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
+  const [agentStreaming, setAgentStreaming] = useState<string | null>(null);
   const roomNameRef = useRef<string | null>(null);
+  // Tracks live segment texts by ID — handles both delta and cumulative segment updates
+  const agentSegmentsRef = useRef<Map<string, string>>(new Map());
 
   const { connect, disconnect } = useLiveKitRoom();
   const toolEvents = useToolEvents(room);
@@ -38,6 +42,8 @@ export function CallInterface() {
     setLoading(true);
     resetSummary();
     setTranscript([]);
+    setAgentStreaming(null);
+    agentSegmentsRef.current.clear();
     try {
       const r = await connect();
       setRoom(r);
@@ -48,6 +54,11 @@ export function CallInterface() {
           const event = JSON.parse(new TextDecoder().decode(payload));
           if (event.type === "tool_event") handleToolEvent(event);
           if (event.type === "transcript" && event.text) {
+            // Agent final line: clear streaming bubble, commit confirmed text
+            if ((event.speaker as string) === "agent") {
+              agentSegmentsRef.current.clear();
+              setAgentStreaming(null);
+            }
             setTranscript(prev => [
               ...prev,
               {
@@ -59,12 +70,35 @@ export function CallInterface() {
           }
         } catch { /* ignore */ }
       });
+
+      // Stream agent text word-by-word via LiveKit's built-in transcription events.
+      // livekit-agents TranscriptSynchronizer publishes segments timed with TTS playback.
+      r.on(RoomEvent.TranscriptionReceived, (
+        segments: TranscriptionSegment[],
+        participant?: Participant,
+      ) => {
+        // Only handle remote (agent) transcription, not the local user's STT
+        if (!participant || participant.isLocal) return;
+        let changed = false;
+        for (const seg of segments) {
+          if (seg.text) {
+            agentSegmentsRef.current.set(seg.id, seg.text);
+            changed = true;
+          }
+        }
+        if (changed) {
+          const combined = Array.from(agentSegmentsRef.current.values()).join(" ").trim();
+          setAgentStreaming(combined || null);
+        }
+      });
     } finally {
       setLoading(false);
     }
   }, [connect, handleToolEvent, resetSummary]);
 
   const handleEnd = useCallback(async () => {
+    agentSegmentsRef.current.clear();
+    setAgentStreaming(null);
     await disconnect();
     setRoom(null);
   }, [disconnect]);
@@ -87,7 +121,7 @@ export function CallInterface() {
 
         <div className="flex flex-col gap-4">
           <div className="flex-1 min-h-0" style={{ height: 380 }}>
-            <Transcript lines={transcript} />
+            <Transcript lines={transcript} streamingLine={agentStreaming} />
           </div>
           <ControlBar
             connected={connected}
