@@ -1,0 +1,28 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-dotenv>=1.0.0
+pydantic-settings>=2.6.0
+pydantic>=2.10.0
+
+# Database
+sqlalchemy>=2.0.0
+aiosqlite>=0.20.0
+
+# LiveKit Agents 1.5.x
+livekit
+livekit-agents~=1.5
+livekit-plugins-deepgram~=1.0
+livekit-plugins-cartesia~=1.0
+livekit-plugins-google~=1.0
+livekit-plugins-silero~=1.0
+livekit-plugins-tavus~=1.0
+av
+
+# Google Gemini (for summary service)
+google-generativeai>=0.8.0
+
+# HTTP client
+httpx>=0.27.0
+
+# CORS
+python-multipart>=0.0.12
