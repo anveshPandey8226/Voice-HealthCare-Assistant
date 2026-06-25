@@ -452,5 +452,3 @@ frontend:  Next.js on :3000  — patient-facing UI
 - `agent` → `python agent_worker.py dev`
 
 Both share the same `.env`. SQLite data persists in a named Docker volume (`db_data:/app/data`). The `agent` service has a `depends_on: backend: condition: service_healthy` so it starts only after FastAPI is ready.
-
-<video src="https://github.com/anveshPandey8226/Voice-HealthCare-Assistant/blob/master/22.06.2026_01.10.42_REC.mp4" width="100%" controls loop muted autoplay></video>
