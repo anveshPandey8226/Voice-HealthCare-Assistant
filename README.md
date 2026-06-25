@@ -1,3 +1,7 @@
+<video src="https://github.com/anveshPandey8226/Voice-HealthCare-Assistant/blob/master/compressed-video.mp4" width="100%" controls loop muted autoplay></video>
+
+
+
 # CareAI Health — Voice AI Agent
 
 A real-time AI voice agent for healthcare appointment management. Patients call in, speak naturally, and the agent identifies them, checks slot availability, books/cancels/modifies appointments, and generates a structured call summary — all through voice.
