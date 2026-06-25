@@ -1,5 +1,4 @@
-<video src="https://github.com/anveshPandey8226/Voice-HealthCare-Assistant/blob/master/compressed-video.mp4" width="100%" controls loop muted autoplay></video>
-
+https://github.com/user-attachments/assets/1f73ebd8-f3a5-4361-8b3e-0866055c0b01
 
 
 # CareAI Health — Voice AI Agent
